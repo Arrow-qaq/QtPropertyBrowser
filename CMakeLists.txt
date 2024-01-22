@@ -1,9 +1,9 @@
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.2)
+cmake_minimum_required(VERSION 3.22)
 
 PROJECT(QtPropertyBrowser)
 
-OPTION(QtPropertyBrowser_BUILD_EXAMPLES "Build examples" OFF)
+OPTION(QtPropertyBrowser_BUILD_EXAMPLES "Build examples" ON)
 
 #-----------------------------------------------------------------------------
 # Output directories.
@@ -18,9 +18,14 @@ ENDFOREACH()
 #-----------------------------------------------------------------------------
 # Qt
 #
-FIND_PACKAGE(Qt4 4.7 REQUIRED)
-INCLUDE(${QT_USE_FILE})
+set(CMAKE_PREFIX_PATH $ENV{QTDIR512})
+find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED )
 
+include_directories(
+  ${Qt5Core_INCLUDE_DIRS}
+  ${Qt5Widgets_INCLUDE_DIRS}
+  ${Qt5Gui_INCLUDE_DIRS}
+  )
 #-----------------------------------------------------------------------------
 # Subdirectories
 #

@@ -1,58 +1,23 @@
-/****************************************************************************
-**
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-**
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
-** This file is part of a Qt Solutions component.
-**
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-****************************************************************************/
+// Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+// SPDX-License-Identifier: BSD-3-Clause
 
 
 #include "qtpropertymanager.h"
 #include "qtpropertybrowserutils_p.h"
-#include <QtCore/QDateTime>
-#include <QtCore/QLocale>
-#include <QtCore/QMap>
-#include <QtCore/QTimer>
-#include <QtGui/QIcon>
-#include <QtCore/QMetaEnum>
-#include <QtGui/QFontDatabase>
-#include <QtGui/QStyleOption>
-#include <QtGui/QStyle>
-#include <QtGui/QApplication>
-#include <QtGui/QPainter>
-#include <QtGui/QLabel>
-#include <QtGui/QCheckBox>
+#include <QDateTime>
+#include <QLocale>
+#include <QMap>
+#include <QTimer>
+#include <QIcon>
+#include <QMetaEnum>
+#include <QFontDatabase>
+#include <QStyleOption>
+#include <QStyle>
+#include <QApplication>
+#include <QPainter>
+#include <QLabel>
+#include <QCheckBox>
+#include <QLineEdit>
 
 #include <limits.h>
 #include <float.h>
@@ -192,7 +157,7 @@ static Value getData(const QMap<const QtProperty *, PrivateData> &propertyMap,
             const QtProperty *property, const Value &defaultValue = Value())
 {
     typedef QMap<const QtProperty *, PrivateData> PropertyToData;
-    typedef Q_TYPENAME PropertyToData::const_iterator PropertyToDataConstIterator;
+    typedef typename PropertyToData::const_iterator PropertyToDataConstIterator;
     const PropertyToDataConstIterator it = propertyMap.constFind(property);
     if (it == propertyMap.constEnd())
         return defaultValue;
@@ -228,7 +193,7 @@ static void setSimpleValue(QMap<const QtProperty *, Value> &propertyMap,
             QtProperty *property, const Value &val)
 {
     typedef QMap<const QtProperty *, Value> PropertyToData;
-    typedef Q_TYPENAME PropertyToData::iterator PropertyToDataIterator;
+    typedef typename PropertyToData::iterator PropertyToDataIterator;
     const PropertyToDataIterator it = propertyMap.find(property);
     if (it == propertyMap.end())
         return;
@@ -249,9 +214,9 @@ static void setValueInRange(PropertyManager *manager, PropertyManagerPrivate *ma
             QtProperty *property, const Value &val,
             void (PropertyManagerPrivate::*setSubPropertyValue)(QtProperty *, ValueChangeParameter))
 {
-    typedef Q_TYPENAME PropertyManagerPrivate::Data PrivateData;
+    typedef typename PropertyManagerPrivate::Data PrivateData;
     typedef QMap<const QtProperty *, PrivateData> PropertyToData;
-    typedef Q_TYPENAME PropertyToData::iterator PropertyToDataIterator;
+    typedef typename PropertyToData::iterator PropertyToDataIterator;
     const PropertyToDataIterator it = managerPrivate->m_values.find(property);
     if (it == managerPrivate->m_values.end())
         return;
@@ -284,9 +249,9 @@ static void setBorderValues(PropertyManager *manager, PropertyManagerPrivate *ma
             void (PropertyManagerPrivate::*setSubPropertyRange)(QtProperty *,
                     ValueChangeParameter, ValueChangeParameter, ValueChangeParameter))
 {
-    typedef Q_TYPENAME PropertyManagerPrivate::Data PrivateData;
+    typedef typename PropertyManagerPrivate::Data PrivateData;
     typedef QMap<const QtProperty *, PrivateData> PropertyToData;
-    typedef Q_TYPENAME PropertyToData::iterator PropertyToDataIterator;
+    typedef typename PropertyToData::iterator PropertyToDataIterator;
     const PropertyToDataIterator it = managerPrivate->m_values.find(property);
     if (it == managerPrivate->m_values.end())
         return;
@@ -329,7 +294,7 @@ static void setBorderValue(PropertyManager *manager, PropertyManagerPrivate *man
                     ValueChangeParameter, ValueChangeParameter, ValueChangeParameter))
 {
     typedef QMap<const QtProperty *, PrivateData> PropertyToData;
-    typedef Q_TYPENAME PropertyToData::iterator PropertyToDataIterator;
+    typedef typename PropertyToData::iterator PropertyToDataIterator;
     const PropertyToDataIterator it = managerPrivate->m_values.find(property);
     if (it == managerPrivate->m_values.end())
         return;
@@ -623,11 +588,12 @@ public:
 
     struct Data
     {
-        Data() : val(0), minVal(-INT_MAX), maxVal(INT_MAX), singleStep(1) {}
+        Data() : val(0), minVal(-INT_MAX), maxVal(INT_MAX), singleStep(1), readOnly(false) {}
         int val;
         int minVal;
         int maxVal;
         int singleStep;
+        bool readOnly;
         int minimumValue() const { return minVal; }
         int maximumValue() const { return maxVal; }
         void setMinimumValue(int newMinVal) { setSimpleMinimumData(this, newMinVal); }
@@ -755,6 +721,18 @@ int QtIntPropertyManager::singleStep(const QtProperty *property) const
 }
 
 /*!
+    Returns read-only status of the property.
+
+    When property is read-only it's value can be selected and copied from editor but not modified.
+
+    \sa QtIntPropertyManager::setReadOnly
+*/
+bool QtIntPropertyManager::isReadOnly(const QtProperty *property) const
+{
+    return getData<bool>(d_ptr->m_values, &QtIntPropertyManagerPrivate::Data::readOnly, property, false);
+}
+
+/*!
     \reimp
 */
 QString QtIntPropertyManager::valueText(const QtProperty *property) const
@@ -874,6 +852,29 @@ void QtIntPropertyManager::setSingleStep(QtProperty *property, int step)
 }
 
 /*!
+    Sets read-only status of the property.
+
+    \sa QtIntPropertyManager::setReadOnly
+*/
+void QtIntPropertyManager::setReadOnly(QtProperty *property, bool readOnly)
+{
+    const QtIntPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtIntPropertyManagerPrivate::Data data = it.value();
+
+    if (data.readOnly == readOnly)
+        return;
+
+    data.readOnly = readOnly;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit readOnlyChanged(property, data.readOnly);
+}
+
+/*!
     \reimp
 */
 void QtIntPropertyManager::initializeProperty(QtProperty *property)
@@ -899,12 +900,13 @@ public:
 
     struct Data
     {
-        Data() : val(0), minVal(-INT_MAX), maxVal(INT_MAX), singleStep(1), decimals(2) {}
+        Data() : val(0), minVal(-INT_MAX), maxVal(INT_MAX), singleStep(1), decimals(2), readOnly(false) {}
         double val;
         double minVal;
         double maxVal;
         double singleStep;
         int decimals;
+        bool readOnly;
         double minimumValue() const { return minVal; }
         double maximumValue() const { return maxVal; }
         void setMinimumValue(double newMinVal) { setSimpleMinimumData(this, newMinVal); }
@@ -1053,6 +1055,18 @@ int QtDoublePropertyManager::decimals(const QtProperty *property) const
 }
 
 /*!
+    Returns read-only status of the property.
+
+    When property is read-only it's value can be selected and copied from editor but not modified.
+
+    \sa QtDoublePropertyManager::setReadOnly
+*/
+bool QtDoublePropertyManager::isReadOnly(const QtProperty *property) const
+{
+    return getData<bool>(d_ptr->m_values, &QtDoublePropertyManagerPrivate::Data::readOnly, property, false);
+}
+
+/*!
     \reimp
 */
 QString QtDoublePropertyManager::valueText(const QtProperty *property) const
@@ -1060,7 +1074,7 @@ QString QtDoublePropertyManager::valueText(const QtProperty *property) const
     const QtDoublePropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
     if (it == d_ptr->m_values.constEnd())
         return QString();
-    return QString::number(it.value().val, 'f', it.value().decimals);
+    return QLocale::system().toString(it.value().val, 'f', it.value().decimals);
 }
 
 /*!
@@ -1109,6 +1123,29 @@ void QtDoublePropertyManager::setSingleStep(QtProperty *property, double step)
     it.value() = data;
 
     emit singleStepChanged(property, data.singleStep);
+}
+
+/*!
+    Sets read-only status of the property.
+
+    \sa QtDoublePropertyManager::setReadOnly
+*/
+void QtDoublePropertyManager::setReadOnly(QtProperty *property, bool readOnly)
+{
+    const QtDoublePropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtDoublePropertyManagerPrivate::Data data = it.value();
+
+    if (data.readOnly == readOnly)
+        return;
+
+    data.readOnly = readOnly;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit readOnlyChanged(property, data.readOnly);
 }
 
 /*!
@@ -1229,11 +1266,14 @@ public:
 
     struct Data
     {
-        Data() : regExp(QString(QLatin1Char('*')),  Qt::CaseSensitive, QRegExp::Wildcard)
+        Data() : regExp(QString(QLatin1Char('*')),  Qt::CaseSensitive, QRegExp::Wildcard),
+            echoMode(QLineEdit::Normal), readOnly(false)
         {
         }
         QString val;
         QRegExp regExp;
+        int echoMode;
+        bool readOnly;
     };
 
     typedef QMap<const QtProperty *, Data> PropertyValueMap;
@@ -1328,12 +1368,48 @@ QRegExp QtStringPropertyManager::regExp(const QtProperty *property) const
 /*!
     \reimp
 */
+EchoMode QtStringPropertyManager::echoMode(const QtProperty *property) const
+{
+    return (EchoMode)getData<int>(d_ptr->m_values, &QtStringPropertyManagerPrivate::Data::echoMode, property, 0);
+}
+
+/*!
+    Returns read-only status of the property.
+
+    When property is read-only it's value can be selected and copied from editor but not modified.
+
+    \sa QtStringPropertyManager::setReadOnly
+*/
+bool QtStringPropertyManager::isReadOnly(const QtProperty *property) const
+{
+    return getData<bool>(d_ptr->m_values, &QtStringPropertyManagerPrivate::Data::readOnly, property, false);
+}
+
+/*!
+    \reimp
+*/
 QString QtStringPropertyManager::valueText(const QtProperty *property) const
 {
     const QtStringPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
     if (it == d_ptr->m_values.constEnd())
         return QString();
+
     return it.value().val;
+}
+
+/*!
+    \reimp
+*/
+QString QtStringPropertyManager::displayText(const QtProperty *property) const
+{
+    const QtStringPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
+    if (it == d_ptr->m_values.constEnd())
+        return QString();
+
+    QLineEdit edit;
+    edit.setEchoMode((EchoMode)it.value().echoMode);
+    edit.setText(it.value().val);
+    return edit.displayText();
 }
 
 /*!
@@ -1391,6 +1467,48 @@ void QtStringPropertyManager::setRegExp(QtProperty *property, const QRegExp &reg
     emit regExpChanged(property, data.regExp);
 }
 
+
+void QtStringPropertyManager::setEchoMode(QtProperty *property, EchoMode echoMode)
+{
+    const QtStringPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtStringPropertyManagerPrivate::Data data = it.value();
+
+    if (data.echoMode == echoMode)
+        return;
+
+    data.echoMode = echoMode;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit echoModeChanged(property, data.echoMode);
+}
+
+/*!
+    Sets read-only status of the property.
+
+    \sa QtStringPropertyManager::setReadOnly
+*/
+void QtStringPropertyManager::setReadOnly(QtProperty *property, bool readOnly)
+{
+    const QtStringPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtStringPropertyManagerPrivate::Data data = it.value();
+
+    if (data.readOnly == readOnly)
+        return;
+
+    data.readOnly = readOnly;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit readOnlyChanged(property, data.readOnly);
+}
+
 /*!
     \reimp
 */
@@ -1408,15 +1526,62 @@ void QtStringPropertyManager::uninitializeProperty(QtProperty *property)
 }
 
 // QtBoolPropertyManager
+//     Return an icon containing a check box indicator
+static QIcon drawCheckBox(bool value)
+{
+    QStyleOptionButton opt;
+    opt.state |= value ? QStyle::State_On : QStyle::State_Off;
+    opt.state |= QStyle::State_Enabled;
+    const QStyle *style = QApplication::style();
+    // Figure out size of an indicator and make sure it is not scaled down in a list view item
+    // by making the pixmap as big as a list view icon and centering the indicator in it.
+    // (if it is smaller, it can't be helped)
+    const int indicatorWidth = style->pixelMetric(QStyle::PM_IndicatorWidth, &opt);
+    const int indicatorHeight = style->pixelMetric(QStyle::PM_IndicatorHeight, &opt);
+    const int listViewIconSize = indicatorWidth;
+    const int pixmapWidth = indicatorWidth;
+    const int pixmapHeight = qMax(indicatorHeight, listViewIconSize);
+
+    opt.rect = QRect(0, 0, indicatorWidth, indicatorHeight);
+    QPixmap pixmap = QPixmap(pixmapWidth, pixmapHeight);
+    pixmap.fill(Qt::transparent);
+    {
+        // Center?
+        const int xoff = (pixmapWidth  > indicatorWidth)  ? (pixmapWidth  - indicatorWidth)  / 2 : 0;
+        const int yoff = (pixmapHeight > indicatorHeight) ? (pixmapHeight - indicatorHeight) / 2 : 0;
+        QPainter painter(&pixmap);
+        painter.translate(xoff, yoff);
+        style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &opt, &painter);
+    }
+    return QIcon(pixmap);
+}
 
 class QtBoolPropertyManagerPrivate
 {
     QtBoolPropertyManager *q_ptr;
     Q_DECLARE_PUBLIC(QtBoolPropertyManager)
 public:
+    QtBoolPropertyManagerPrivate();
 
-    QMap<const QtProperty *, bool> m_values;
+    struct Data
+    {
+        Data() : val(false), textVisible(true) {}
+        bool val;
+        bool textVisible;
+    };
+
+    typedef QMap<const QtProperty *, Data> PropertyValueMap;
+    PropertyValueMap m_values;
+
+    const QIcon m_checkedIcon;
+    const QIcon m_uncheckedIcon;
 };
+
+QtBoolPropertyManagerPrivate::QtBoolPropertyManagerPrivate() :
+    m_checkedIcon(drawCheckBox(true)),
+    m_uncheckedIcon(drawCheckBox(false))
+{
+}
 
 /*!
     \class QtBoolPropertyManager
@@ -1470,7 +1635,12 @@ QtBoolPropertyManager::~QtBoolPropertyManager()
 */
 bool QtBoolPropertyManager::value(const QtProperty *property) const
 {
-    return d_ptr->m_values.value(property, false);
+    return getValue<bool>(d_ptr->m_values, property, false);
+}
+
+bool QtBoolPropertyManager::textVisible(const QtProperty *property) const
+{
+    return getData<bool>(d_ptr->m_values, &QtBoolPropertyManagerPrivate::Data::textVisible, property, false);
 }
 
 /*!
@@ -1478,44 +1648,17 @@ bool QtBoolPropertyManager::value(const QtProperty *property) const
 */
 QString QtBoolPropertyManager::valueText(const QtProperty *property) const
 {
-    const QMap<const QtProperty *, bool>::const_iterator it = d_ptr->m_values.constFind(property);
+    const QtBoolPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
     if (it == d_ptr->m_values.constEnd())
+        return QString();
+
+    const QtBoolPropertyManagerPrivate::Data &data = it.value();
+    if (!data.textVisible)
         return QString();
 
     static const QString trueText = tr("True");
     static const QString falseText = tr("False");
-    return it.value() ? trueText : falseText;
-}
-
-// Return an icon containing a check box indicator
-static QIcon drawCheckBox(bool value)
-{
-    QStyleOptionButton opt;
-    opt.state |= value ? QStyle::State_On : QStyle::State_Off;
-    opt.state |= QStyle::State_Enabled;
-    const QStyle *style = QApplication::style();
-    // Figure out size of an indicator and make sure it is not scaled down in a list view item
-    // by making the pixmap as big as a list view icon and centering the indicator in it.
-    // (if it is smaller, it can't be helped)
-    const int indicatorWidth = style->pixelMetric(QStyle::PM_IndicatorWidth, &opt);
-    const int indicatorHeight = style->pixelMetric(QStyle::PM_IndicatorHeight, &opt);
-    const int listViewIconSize = indicatorWidth;
-    const int pixmapWidth = indicatorWidth;
-    const int pixmapHeight = qMax(indicatorHeight, listViewIconSize);
-
-    opt.rect = QRect(0, 0, indicatorWidth, indicatorHeight);
-    QPixmap pixmap = QPixmap(pixmapWidth, pixmapHeight);
-    pixmap.fill(Qt::transparent);
-    {
-        // Center?
-        const int xoff = (pixmapWidth  > indicatorWidth)  ? (pixmapWidth  - indicatorWidth)  / 2 : 0;
-        const int yoff = (pixmapHeight > indicatorHeight) ? (pixmapHeight - indicatorHeight) / 2 : 0;
-        QPainter painter(&pixmap);
-        painter.translate(xoff, yoff);
-        QCheckBox cb;
-        style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &opt, &painter, &cb);
-    }
-    return QIcon(pixmap);
+    return data.val ? trueText : falseText;
 }
 
 /*!
@@ -1523,13 +1666,11 @@ static QIcon drawCheckBox(bool value)
 */
 QIcon QtBoolPropertyManager::valueIcon(const QtProperty *property) const
 {
-    const QMap<const QtProperty *, bool>::const_iterator it = d_ptr->m_values.constFind(property);
+    const QtBoolPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
     if (it == d_ptr->m_values.constEnd())
         return QIcon();
 
-    static const QIcon checkedIcon = drawCheckBox(true);
-    static const QIcon uncheckedIcon = drawCheckBox(false);
-    return it.value() ? checkedIcon : uncheckedIcon;
+    return it.value().val ? d_ptr->m_checkedIcon : d_ptr->m_uncheckedIcon;
 }
 
 /*!
@@ -1541,10 +1682,38 @@ QIcon QtBoolPropertyManager::valueIcon(const QtProperty *property) const
 */
 void QtBoolPropertyManager::setValue(QtProperty *property, bool val)
 {
-    setSimpleValue<bool, bool, QtBoolPropertyManager>(d_ptr->m_values, this,
-                &QtBoolPropertyManager::propertyChanged,
-                &QtBoolPropertyManager::valueChanged,
-                property, val);
+    const QtBoolPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtBoolPropertyManagerPrivate::Data data = it.value();
+
+    if (data.val == val)
+        return;
+
+    data.val = val;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit valueChanged(property, data.val);
+}
+
+void QtBoolPropertyManager::setTextVisible(QtProperty *property, bool textVisible)
+{
+    const QtBoolPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtBoolPropertyManagerPrivate::Data data = it.value();
+
+    if (data.textVisible == textVisible)
+        return;
+
+    data.textVisible = textVisible;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit textVisibleChanged(property, data.textVisible);
 }
 
 /*!
@@ -1552,7 +1721,7 @@ void QtBoolPropertyManager::setValue(QtProperty *property, bool val)
 */
 void QtBoolPropertyManager::initializeProperty(QtProperty *property)
 {
-    d_ptr->m_values[property] = false;
+    d_ptr->m_values[property] = QtBoolPropertyManagerPrivate::Data();
 }
 
 /*!
@@ -3268,7 +3437,7 @@ void QtSizePropertyManager::setMaximum(QtProperty *property, const QSize &maxVal
     When setting a new range, the current value is adjusted if
     necessary (ensuring that the value remains within the range).
 
-    \sa  setMinimum(), setMaximum(), rangeChanged()
+    \sa setMinimum(), setMaximum(), rangeChanged()
 */
 void QtSizePropertyManager::setRange(QtProperty *property, const QSize &minVal, const QSize &maxVal)
 {
@@ -3666,7 +3835,7 @@ void QtSizeFPropertyManager::setMaximum(QtProperty *property, const QSizeF &maxV
     When setting a new range, the current value is adjusted if
     necessary (ensuring that the value remains within the range).
 
-    \sa  setMinimum(), setMaximum(), rangeChanged()
+    \sa setMinimum(), setMaximum(), rangeChanged()
 */
 void QtSizeFPropertyManager::setRange(QtProperty *property, const QSizeF &minVal, const QSizeF &maxVal)
 {
@@ -5149,8 +5318,8 @@ void QtFlagPropertyManager::setFlagNames(QtProperty *property, const QStringList
     while (itProp.hasNext()) {
         QtProperty *prop = itProp.next();
         if (prop) {
-            delete prop;
             d_ptr->m_flagToProperty.remove(prop);
+            delete prop;
         }
     }
     d_ptr->m_propertyToFlags[property].clear();
@@ -5190,8 +5359,8 @@ void QtFlagPropertyManager::uninitializeProperty(QtProperty *property)
     while (itProp.hasNext()) {
         QtProperty *prop = itProp.next();
         if (prop) {
-            delete prop;
             d_ptr->m_flagToProperty.remove(prop);
+            delete prop;
         }
     }
     d_ptr->m_propertyToFlags.remove(property);
@@ -6282,7 +6451,24 @@ void QtColorPropertyManager::uninitializeProperty(QtProperty *property)
 
 // QtCursorPropertyManager
 
+// Make sure icons are removed as soon as QApplication is destroyed, otherwise,
+// handles are leaked on X11.
+static void clearCursorDatabase();
+namespace {
+struct CursorDatabase : public QtCursorDatabase
+{
+    CursorDatabase()
+    {
+        qAddPostRoutine(clearCursorDatabase);
+    }
+};
+}
 Q_GLOBAL_STATIC(QtCursorDatabase, cursorDatabase)
+
+static void clearCursorDatabase()
+{
+    cursorDatabase()->clear();
+}
 
 class QtCursorPropertyManagerPrivate
 {
