@@ -1,5 +1,4 @@
 add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0)
-
 SET(KIT_SRCS
   qtbuttonpropertybrowser.cpp
   qtbuttonpropertybrowser.h
@@ -40,18 +39,33 @@ QT5_WRAP_CPP(KIT_MOC_CPP ${KIT_MOC_SRCS})
 QT5_ADD_RESOURCES(KIT_QRC_SRCS ${KIT_resources})
 
 SET(libname ${PROJECT_NAME})
-ADD_LIBRARY(${libname} STATIC
-  ${KIT_SRCS}
-  ${KIT_UI_CPP}
-  ${KIT_MOC_CPP}
+
+if(QtPropertyBrowser_BUILD_SHARE) 
+  add_definitions(-DQT_QTPROPERTYBROWSER_EXPORT)
+
+  ADD_LIBRARY(${libname}_share SHARED 
+  ${KIT_SRCS} 
+  ${KIT_UI_CPP} 
+  ${KIT_MOC_CPP} 
   ${KIT_QRC_SRCS}
   )
-  
-SET(${PROJECT_NAME}_LINK_LIBRARIES ${QT_LIBRARIES})
-TARGET_LINK_LIBRARIES(
-  ${libname}
-  ${${PROJECT_NAME}_LINK_LIBRARIES}
+  TARGET_LINK_LIBRARIES(${libname}_share 
+  ${QT_LIBRARIES}
   )
+endif(QtPropertyBrowser_BUILD_SHARE)
+
+if(QtPropertyBrowser_BUILD_STATIC)
+  ADD_LIBRARY(${libname}_static STATIC 
+  ${KIT_SRCS} 
+  ${KIT_UI_CPP} 
+  ${KIT_MOC_CPP} 
+  ${KIT_QRC_SRCS}
+  )
+  TARGET_LINK_LIBRARIES(${libname}_static 
+  ${QT_LIBRARIES}
+  )
+endif(QtPropertyBrowser_BUILD_STATIC)
+  
 
 # List of header that should go though moc
 SET(KIT_HEADERS_MOC_SRCS
@@ -90,4 +104,10 @@ ENDFOREACH()
 add_custom_target(${libname}GenerateMoc
   DEPENDS ${KIT_MOC_CPP}
   )
-add_dependencies(${libname} ${libname}GenerateMoc)
+
+if(QtPropertyBrowser_BUILD_SHARE) 
+  add_dependencies(${libname}_share ${libname}GenerateMoc)
+endif(QtPropertyBrowser_BUILD_SHARE)
+if(QtPropertyBrowser_BUILD_STATIC)
+  add_dependencies(${libname}_static ${libname}GenerateMoc)  
+endif(QtPropertyBrowser_BUILD_STATIC)

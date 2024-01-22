@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.22)
 
 PROJECT(QtPropertyBrowser)
 
-OPTION(QtPropertyBrowser_BUILD_EXAMPLES "Build examples" ON)
+OPTION(QtPropertyBrowser_BUILD_EXAMPLES "Build examples" OFF)
+OPTION(QtPropertyBrowser_BUILD_STATIC "Build static" ON)
+OPTION(QtPropertyBrowser_BUILD_SHARE "Build share" ON)
 
 #-----------------------------------------------------------------------------
 # Output directories.
@@ -26,6 +28,13 @@ include_directories(
   ${Qt5Widgets_INCLUDE_DIRS}
   ${Qt5Gui_INCLUDE_DIRS}
   )
+
+set(QT_LIBRARIES 
+  Qt5::Core 
+  Qt5::Widgets 
+  Qt5::Gui 
+)
+
 #-----------------------------------------------------------------------------
 # Subdirectories
 #
