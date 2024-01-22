@@ -20,6 +20,12 @@ ENDFOREACH()
 #-----------------------------------------------------------------------------
 # Qt
 #
+# 开启自动生成moc|uic|rcc文件
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_PREFIX_PATH $ENV{QTDIR512})
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED )
 
