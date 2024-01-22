@@ -1,45 +1,9 @@
-/****************************************************************************
-**
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
-** All rights reserved.
-**
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
-** This file is part of a Qt Solutions component.
-**
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
-**     the names of its contributors may be used to endorse or promote
-**     products derived from this software without specific prior written
-**     permission.
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-****************************************************************************/
+// Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+// SPDX-License-Identifier: BSD-3-Clause
 
-#include <QtGui/QApplication>
-#include <QtCore/QDate>
-#include <QtCore/QLocale>
+#include <QApplication>
+#include <QDate>
+#include <QLocale>
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
 #include "qttreepropertybrowser.h"
@@ -65,14 +29,40 @@ int main(int argc, char **argv)
     item->setAttribute(QLatin1String("singleStep"), 10);
     topItem->addSubProperty(item);
 
+    item = variantManager->addProperty(QVariant::Int, QString::number(i++) + QLatin1String(" Int Property (ReadOnly)"));
+    item->setValue(20);
+    item->setAttribute(QLatin1String("minimum"), 0);
+    item->setAttribute(QLatin1String("maximum"), 100);
+    item->setAttribute(QLatin1String("singleStep"), 10);
+    item->setAttribute(QLatin1String("readOnly"), true);
+    topItem->addSubProperty(item);
+
     item = variantManager->addProperty(QVariant::Double, QString::number(i++) + QLatin1String(" Double Property"));
     item->setValue(1.2345);
     item->setAttribute(QLatin1String("singleStep"), 0.1);
     item->setAttribute(QLatin1String("decimals"), 3);
     topItem->addSubProperty(item);
 
+    item = variantManager->addProperty(QVariant::Double, QString::number(i++) + QLatin1String(" Double Property (ReadOnly)"));
+    item->setValue(1.23456);
+    item->setAttribute(QLatin1String("singleStep"), 0.1);
+    item->setAttribute(QLatin1String("decimals"), 5);
+    item->setAttribute(QLatin1String("readOnly"), true);
+    topItem->addSubProperty(item);
+
     item = variantManager->addProperty(QVariant::String, QString::number(i++) + QLatin1String(" String Property"));
     item->setValue("Value");
+    topItem->addSubProperty(item);
+
+    item = variantManager->addProperty(QVariant::String, QString::number(i++) + QLatin1String(" String Property (Password)"));
+    item->setAttribute(QLatin1String("echoMode"), QLineEdit::Password);
+    item->setValue("Password");
+    topItem->addSubProperty(item);
+
+    // Readonly String Property
+    item = variantManager->addProperty(QVariant::String, QString::number(i++) + QLatin1String(" String Property (ReadOnly)"));
+    item->setAttribute(QLatin1String("readOnly"), true);
+    item->setValue("readonly text");
     topItem->addSubProperty(item);
 
     item = variantManager->addProperty(QVariant::Date, QString::number(i++) + QLatin1String(" Date Property"));

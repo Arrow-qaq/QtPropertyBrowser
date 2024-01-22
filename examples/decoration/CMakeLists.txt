@@ -13,7 +13,13 @@ INCLUDE_DIRECTORIES(
 QT5_WRAP_CPP(KIT_MOC_CPP ${KIT_MOC_SRCS})
   
 ADD_EXECUTABLE(${example_name} ${KIT_SRCS} ${KIT_MOC_SRCS})
-TARGET_LINK_LIBRARIES(${example_name} ${PROJECT_NAME})
+if(QtPropertyBrowser_BUILD_STATIC)
+  TARGET_LINK_LIBRARIES(${example_name} ${PROJECT_NAME}_static)
+endif()
+
+if(QtPropertyBrowser_BUILD_SHARED)
+  TARGET_LINK_LIBRARIES(${example_name} ${PROJECT_NAME}_share)
+endif()
 
 SET(KIT_CPP_MOC_SRCS
   main.cpp
