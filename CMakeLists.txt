@@ -11,11 +11,11 @@ OPTION(QtPropertyBrowser_BUILD_SHARE "Build share" OFF)
 # Output directories.
 #
 SET(output_dir ${QtPropertyBrowser_BINARY_DIR}/bin)
-FOREACH(type LIBRARY RUNTIME ARCHIVE)
+foreach(type LIBRARY RUNTIME ARCHIVE)
   IF(NOT DEFINED CMAKE_${type}_OUTPUT_DIRECTORY)
     SET(CMAKE_${type}_OUTPUT_DIRECTORY ${output_dir} CACHE INTERNAL "Single output directory for building all libraries.")
   ENDIF()
-ENDFOREACH()
+endforeach()
 
 #-----------------------------------------------------------------------------
 # Qt
@@ -45,15 +45,8 @@ set(QT_LIBRARIES
 #-----------------------------------------------------------------------------
 # Subdirectories
 #
-ADD_SUBDIRECTORY(src)
+add_subdirectory(src)
 IF(QtPropertyBrowser_BUILD_EXAMPLES)
-  ADD_SUBDIRECTORY(examples)
+  add_subdirectory(examples)
 ENDIF()
 
-#-----------------------------------------------------------------------------
-# Generate QtPropertyBrowserConfig file
-#
-CONFIGURE_FILE(UseQtPropertyBrowser.cmake.in
-               ${QtPropertyBrowser_BINARY_DIR}/UseQtPropertyBrowser.cmake COPYONLY)
-
-INCLUDE(GenerateQtPropertyBrowserConfig.cmake)
